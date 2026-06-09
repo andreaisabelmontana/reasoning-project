@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reasoning Project — Built From Scratch</title>
+<meta name="description" content="An original from-scratch build studying automated reasoning over a game environment: model the rules as state and actions, then search for a solution — the foundation of how machines plan." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --accent:#5b21b6; --accent-soft:#efe9fb; --ink:#1a1030; --muted:#564a6b;
+    --line:#e3dbf4; --bg:#fbf9fe; --card:#ffffff;
+    --serif:'Fraunces',Georgia,serif; --sans:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:860px;margin:0 auto;padding:0 28px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);font-size:.86em;background:var(--accent-soft);padding:.1em .4em;border-radius:4px;color:#5b21b6}
+  h1,h2,h3{font-family:var(--serif);font-weight:500;line-height:1.15;letter-spacing:-.01em}
+  header.hero{padding:88px 0 56px;border-bottom:1px solid var(--line)}
+  .eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:0 0 22px}
+  h1{font-size:clamp(2.6rem,6vw,4.1rem);margin:0 0 18px}
+  .lede{font-size:1.22rem;color:var(--muted);max-width:62ch;margin:0 0 28px}
+  .meta{display:flex;flex-wrap:wrap;gap:10px;font-size:.82rem}
+  .chip{font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;border:1px solid var(--line);border-radius:999px;padding:5px 12px;color:var(--muted);background:var(--card)}
+  section{padding:54px 0;border-bottom:1px solid var(--line)}
+  .kicker{font-family:var(--mono);font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+  h2{font-size:clamp(1.7rem,3.4vw,2.3rem);margin:0 0 20px}
+  h3{font-size:1.2rem;margin:0 0 6px}
+  p{margin:0 0 18px;max-width:68ch}
+  .muted{color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:8px}
+  .tool{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .tool .t{font-family:var(--mono);font-size:.78rem;color:var(--accent);letter-spacing:.04em;margin-bottom:8px}
+  .tool h3{font-size:1.05rem;font-family:var(--sans);font-weight:600;margin-bottom:6px}
+  .tool p{font-size:.92rem;color:var(--muted);margin:0}
+  ol.flow{counter-reset:s;list-style:none;padding:0;margin:24px 0 0}
+  ol.flow li{position:relative;padding:18px 0 18px 56px;border-top:1px solid var(--line)}
+  ol.flow li:before{counter-increment:s;content:counter(s,decimal-leading-zero);position:absolute;left:0;top:18px;font-family:var(--mono);font-size:.8rem;color:var(--accent);border:1px solid var(--line);border-radius:8px;width:38px;height:38px;display:grid;place-items:center;background:var(--card)}
+  ol.flow li h3{font-family:var(--sans);font-size:1.02rem;font-weight:600;margin:0 0 4px}
+  ol.flow li p{margin:0;font-size:.93rem;color:var(--muted)}
+  .callout{background:var(--accent-soft);border:1px solid #d4c6f0;border-radius:14px;padding:24px 26px;margin-top:8px}
+  .callout p:last-child{margin:0}
+  ul.learn{list-style:none;padding:0;margin:8px 0 0}
+  ul.learn li{padding:14px 0 14px 30px;border-top:1px solid var(--line);position:relative;color:var(--muted);max-width:68ch}
+  ul.learn li:before{content:"→";position:absolute;left:0;color:var(--accent);font-family:var(--mono)}
+  ul.learn li b{color:var(--ink);font-weight:600}
+  .price{display:flex;align-items:baseline;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 26px;margin-top:8px}
+  .price .n{font-family:var(--serif);font-size:2.6rem;color:var(--accent);line-height:1}
+  .price .l{color:var(--muted);font-size:.95rem}
+  footer{padding:48px 0 80px}
+  .credit{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
+  .credit .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  footer .fine{font-size:.8rem;color:var(--muted);margin-top:22px;text-align:center}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">From-Scratch Build · AI Reasoning</p>
+    <h1>Reasoning Project</h1>
+    <p class="lede">Strip a game down to its essence — a set of states, the moves between them, and a goal — and "playing well" becomes "searching cleverly." This project studies automated reasoning over a game environment from first principles: how to represent a problem so a machine can think about it, and which search makes it find the answer fastest. I rebuilt it from scratch because this is the bedrock of how AI plans at all.</p>
+    <div class="meta">
+      <span class="chip">Python</span><span class="chip">State-space search</span><span class="chip">BFS / DFS</span>
+      <span class="chip">A*</span><span class="chip">Heuristics</span><span class="chip">Planning</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">What it is</p>
+    <h2>Reasoning as search over states</h2>
+    <p>The central idea of classical AI is disarmingly simple: nearly any puzzle can be framed as a graph of states connected by actions, with a goal somewhere in it. Solving the puzzle is finding a path to that goal. This project takes a game environment and builds exactly that — a clean model of states, legal moves and goals — then turns different search algorithms loose on it to compare how they reason.</p>
+    <p>Doing it from scratch makes the trade-offs concrete. Breadth-first guarantees the shortest path but devours memory; depth-first is lean but can wander; A* uses a heuristic to head straight for the goal — if the heuristic is good. The same problem, solved well or badly depending on how the machine searches.</p>
+    <div class="price">
+      <div class="n">state · action · goal</div>
+      <div class="l">the three pieces that turn any puzzle into a search problem a machine can reason over.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">The stack</p>
+    <h2>From a problem to a solution path</h2>
+    <p class="muted">Model the world, then choose how to search it.</p>
+    <div class="grid">
+      <div class="tool"><div class="t">model</div><h3>State representation</h3><p>Encode each configuration of the game as a state the search can reason about.</p></div>
+      <div class="tool"><div class="t">moves</div><h3>Successor function</h3><p>Given a state, generate the legal next states — the edges of the search graph.</p></div>
+      <div class="tool"><div class="t">uninformed</div><h3>BFS &amp; DFS</h3><p>Search blindly — breadth-first for shortest paths, depth-first for low memory.</p></div>
+      <div class="tool"><div class="t">informed</div><h3>A* search</h3><p>Use a heuristic estimate of distance-to-goal to expand the most promising states first.</p></div>
+      <div class="tool"><div class="t">guide</div><h3>Heuristics</h3><p>Admissible estimates that steer A* toward the goal without overshooting optimality.</p></div>
+      <div class="tool"><div class="t">compare</div><h3>Cost analysis</h3><p>Measure nodes expanded and path length to see which search reasons most efficiently.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">Architecture</p>
+    <h2>How a solution is found</h2>
+    <p>Every solver shares the same model and differs only in how it explores:</p>
+    <ol class="flow">
+      <li><h3>Frame</h3><p>Define the start state, the goal test and the legal actions.</p></li>
+      <li><h3>Expand</h3><p>From the current state, generate its successor states.</p></li>
+      <li><h3>Choose</h3><p>The search strategy decides which state to explore next.</p></li>
+      <li><h3>Guide</h3><p>Informed search uses a heuristic to prioritise promising paths.</p></li>
+      <li><h3>Recover</h3><p>On reaching the goal, trace back the path that got there.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">Reflection</p>
+    <h2>What rebuilding it taught me</h2>
+    <ul class="learn">
+      <li><b>Representation comes first.</b> How you model states and actions decides whether the search is easy or hopeless.</li>
+      <li><b>The algorithm is a trade-off.</b> BFS, DFS and A* each win on a different axis — completeness, memory or speed.</li>
+      <li><b>A good heuristic is everything.</b> A* is only as smart as its estimate; the right heuristic turns a huge search into a beeline.</li>
+      <li><b>Admissibility guarantees optimality.</b> A heuristic that never overestimates is what lets A* promise the best path.</li>
+      <li><b>Search is reasoning.</b> "Planning a route" and "playing a puzzle" are the same act — finding a path through a space of possibilities.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="credit">
+      <div class="k">About this build</div>
+      <p style="margin:0">An original, from-scratch build by <b>Andrea</b> — written to learn classical AI reasoning: state-space modelling, uninformed search (BFS/DFS), informed search with A*, admissible heuristics and cost analysis. Plain HTML/CSS, deployed on GitHub Pages.</p>
+    </div>
+    <p class="fine">Built from scratch by Andrea · one of an ongoing series of learning builds.</p>
+  </div>
+</footer>
+</body>
+</html>
