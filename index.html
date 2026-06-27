@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Reasoning Project — Built From Scratch</title>
-<meta name="description" content="An original from-scratch build studying automated reasoning over a game environment: model the rules as state and actions, then search for a solution — the foundation of how machines plan." />
+<title>reasoning-project — single-agent search &amp; planning</title>
+<meta name="description" content="Single-agent automated reasoning as state-space search: model a puzzle as states and actions, then solve it optimally with BFS, uniform-cost, A* and IDA*. Real Python, real node-expansion comparison." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   :root{
     --accent:#5b21b6; --accent-soft:#efe9fb; --ink:#1a1030; --muted:#564a6b;
-    --line:#e3dbf4; --bg:#fbf9fe; --card:#ffffff;
+    --line:#e3dbf4; --bg:#fbf9fe; --card:#ffffff; --good:#15803d;
     --serif:'Fraunces',Georgia,serif; --sans:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
   }
   *{box-sizing:border-box}
@@ -39,20 +39,29 @@
   .tool .t{font-family:var(--mono);font-size:.78rem;color:var(--accent);letter-spacing:.04em;margin-bottom:8px}
   .tool h3{font-size:1.05rem;font-family:var(--sans);font-weight:600;margin-bottom:6px}
   .tool p{font-size:.92rem;color:var(--muted);margin:0}
-  ol.flow{counter-reset:s;list-style:none;padding:0;margin:24px 0 0}
-  ol.flow li{position:relative;padding:18px 0 18px 56px;border-top:1px solid var(--line)}
-  ol.flow li:before{counter-increment:s;content:counter(s,decimal-leading-zero);position:absolute;left:0;top:18px;font-family:var(--mono);font-size:.8rem;color:var(--accent);border:1px solid var(--line);border-radius:8px;width:38px;height:38px;display:grid;place-items:center;background:var(--card)}
-  ol.flow li h3{font-family:var(--sans);font-size:1.02rem;font-weight:600;margin:0 0 4px}
-  ol.flow li p{margin:0;font-size:.93rem;color:var(--muted)}
-  .callout{background:var(--accent-soft);border:1px solid #d4c6f0;border-radius:14px;padding:24px 26px;margin-top:8px}
-  .callout p:last-child{margin:0}
   ul.learn{list-style:none;padding:0;margin:8px 0 0}
   ul.learn li{padding:14px 0 14px 30px;border-top:1px solid var(--line);position:relative;color:var(--muted);max-width:68ch}
-  ul.learn li:before{content:"→";position:absolute;left:0;color:var(--accent);font-family:var(--mono)}
+  ul.learn li:before{content:"\2192";position:absolute;left:0;color:var(--accent);font-family:var(--mono)}
   ul.learn li b{color:var(--ink);font-weight:600}
-  .price{display:flex;align-items:baseline;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 26px;margin-top:8px}
-  .price .n{font-family:var(--serif);font-size:2.6rem;color:var(--accent);line-height:1}
-  .price .l{color:var(--muted);font-size:.95rem}
+  table.cmp{width:100%;border-collapse:collapse;margin-top:8px;font-size:.95rem}
+  table.cmp th,table.cmp td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+  table.cmp th{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+  table.cmp td.num{font-family:var(--mono);text-align:right}
+  table.cmp tr.best td{color:var(--accent);font-weight:600}
+  .note{font-size:.86rem;color:var(--muted);margin-top:14px}
+  /* demo */
+  .demo{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;margin-top:8px}
+  .board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:228px;margin:0 auto 16px}
+  .cell{aspect-ratio:1;display:grid;place-items:center;font-family:var(--mono);font-size:1.5rem;border-radius:10px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--line);user-select:none}
+  .cell.blank{background:transparent;border:1px dashed var(--line);color:transparent}
+  .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:14px}
+  button{font-family:var(--sans);font-size:.9rem;font-weight:500;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:10px;cursor:pointer}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  button.primary:hover{background:#4c1d95;color:#fff}
+  select{font-family:var(--sans);font-size:.9rem;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--card);color:var(--ink)}
+  .out{font-family:var(--mono);font-size:.84rem;background:var(--ink);color:#e8e1f7;border-radius:10px;padding:14px 16px;white-space:pre-wrap;margin-top:6px;min-height:1.2em}
+  .out .hi{color:#c4b5fd}.out .g{color:#86efac}
   footer{padding:48px 0 80px}
   .credit{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
   .credit .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
@@ -62,12 +71,12 @@
 <body>
 <header class="hero">
   <div class="wrap">
-    <p class="eyebrow">From-Scratch Build · AI Reasoning</p>
-    <h1>Reasoning Project</h1>
-    <p class="lede">Strip a game down to its essence — a set of states, the moves between them, and a goal — and "playing well" becomes "searching cleverly." This project studies automated reasoning over a game environment from first principles: how to represent a problem so a machine can think about it, and which search makes it find the answer fastest. I rebuilt it from scratch because this is the bedrock of how AI plans at all.</p>
+    <p class="eyebrow">From-scratch build · single-agent reasoning</p>
+    <h1>reasoning-project</h1>
+    <p class="lede">Strip a puzzle down to its essence — a set of states, the moves between them, and a goal — and "solving it" becomes "searching cleverly." This project models that in plain Python: a clean problem interface, two concrete puzzles, and four search algorithms (BFS, uniform-cost, A*, IDA*) that all find the optimal answer but differ wildly in how much work they do. The headline is the efficiency gap a good heuristic buys you.</p>
     <div class="meta">
-      <span class="chip">Python</span><span class="chip">State-space search</span><span class="chip">BFS / DFS</span>
-      <span class="chip">A*</span><span class="chip">Heuristics</span><span class="chip">Planning</span>
+      <span class="chip">Python · stdlib only</span><span class="chip">BFS / UCS</span>
+      <span class="chip">A*</span><span class="chip">IDA*</span><span class="chip">admissible heuristics</span><span class="chip">33 tests</span>
     </div>
   </div>
 </header>
@@ -76,56 +85,78 @@
   <div class="wrap">
     <p class="kicker">What it is</p>
     <h2>Reasoning as search over states</h2>
-    <p>The central idea of classical AI is disarmingly simple: nearly any puzzle can be framed as a graph of states connected by actions, with a goal somewhere in it. Solving the puzzle is finding a path to that goal. This project takes a game environment and builds exactly that — a clean model of states, legal moves and goals — then turns different search algorithms loose on it to compare how they reason.</p>
-    <p>Doing it from scratch makes the trade-offs concrete. Breadth-first guarantees the shortest path but devours memory; depth-first is lean but can wander; A* uses a heuristic to head straight for the goal — if the heuristic is good. The same problem, solved well or badly depending on how the machine searches.</p>
-    <div class="price">
-      <div class="n">state · action · goal</div>
-      <div class="l">the three pieces that turn any puzzle into a search problem a machine can reason over.</div>
-    </div>
+    <p>A problem is four things: an <b>initial state</b>, a <b>goal test</b>, a <b>successor function</b> (the legal moves), and a <b>step cost</b>. Any domain that implements that interface can be handed to any search algorithm. Solving the puzzle is finding a least-cost path to a goal state — the same act whether you're planning a route or sliding tiles.</p>
+    <p>Doing it from scratch makes the trade-offs concrete. Breadth-first guarantees the shortest path but explores almost everything. A* uses a heuristic to head toward the goal — and if the heuristic never overestimates (it's <i>admissible</i>), the path it returns is still optimal, but it expands a tiny fraction of the nodes.</p>
   </div>
 </section>
 
 <section>
   <div class="wrap">
-    <p class="kicker">The stack</p>
-    <h2>From a problem to a solution path</h2>
-    <p class="muted">Model the world, then choose how to search it.</p>
+    <p class="kicker">The build</p>
+    <h2>Two domains, four searches</h2>
     <div class="grid">
-      <div class="tool"><div class="t">model</div><h3>State representation</h3><p>Encode each configuration of the game as a state the search can reason about.</p></div>
-      <div class="tool"><div class="t">moves</div><h3>Successor function</h3><p>Given a state, generate the legal next states — the edges of the search graph.</p></div>
-      <div class="tool"><div class="t">uninformed</div><h3>BFS &amp; DFS</h3><p>Search blindly — breadth-first for shortest paths, depth-first for low memory.</p></div>
-      <div class="tool"><div class="t">informed</div><h3>A* search</h3><p>Use a heuristic estimate of distance-to-goal to expand the most promising states first.</p></div>
-      <div class="tool"><div class="t">guide</div><h3>Heuristics</h3><p>Admissible estimates that steer A* toward the goal without overshooting optimality.</p></div>
-      <div class="tool"><div class="t">compare</div><h3>Cost analysis</h3><p>Measure nodes expanded and path length to see which search reasons most efficiently.</p></div>
+      <div class="tool"><div class="t">domain</div><h3>8-puzzle</h3><p>3×3 sliding-tile puzzle (any N×N). Inversion-parity solvability test and a k-move scrambler with a known optimal-length bound.</p></div>
+      <div class="tool"><div class="t">domain</div><h3>Missionaries &amp; cannibals</h3><p>River-crossing constraint puzzle; the classic 3M/3C/boat-2 instance has a known optimum of 11 crossings.</p></div>
+      <div class="tool"><div class="t">uninformed</div><h3>BFS &amp; UCS</h3><p>Breadth-first (shortest path on equal costs) and uniform-cost / Dijkstra (optimal for any non-negative cost).</p></div>
+      <div class="tool"><div class="t">informed</div><h3>A* &amp; IDA*</h3><p>Best-first on f = g + h, and iterative-deepening A* with memory linear in depth. Same optimal cost, far fewer nodes.</p></div>
+      <div class="tool"><div class="t">heuristic</div><h3>Manhattan &amp; misplaced</h3><p>Both admissible; Manhattan dominates misplaced-tiles, so A* with it expands no more nodes — usually many fewer.</p></div>
+      <div class="tool"><div class="t">verify</div><h3>Admissibility tests</h3><p>The suite computes the true optimal cost-to-go and asserts the heuristic never exceeds it on sampled states.</p></div>
     </div>
   </div>
 </section>
 
 <section>
   <div class="wrap">
-    <p class="kicker">Architecture</p>
-    <h2>How a solution is found</h2>
-    <p>Every solver shares the same model and differs only in how it explores:</p>
-    <ol class="flow">
-      <li><h3>Frame</h3><p>Define the start state, the goal test and the legal actions.</p></li>
-      <li><h3>Expand</h3><p>From the current state, generate its successor states.</p></li>
-      <li><h3>Choose</h3><p>The search strategy decides which state to explore next.</p></li>
-      <li><h3>Guide</h3><p>Informed search uses a heuristic to prioritise promising paths.</p></li>
-      <li><h3>Recover</h3><p>On reaching the goal, trace back the path that got there.</p></li>
-    </ol>
+    <p class="kicker">The point</p>
+    <h2>A good heuristic, in real numbers</h2>
+    <p>Output from <code>demo.py</code>. All four algorithms return the <b>same optimal cost</b>; only the nodes expanded differ.</p>
+
+    <h3 style="font-family:var(--sans);font-size:1rem;font-weight:600;margin:22px 0 4px">8-puzzle scrambled 27 moves — optimal length 23</h3>
+    <table class="cmp">
+      <thead><tr><th>algorithm</th><th>cost</th><th style="text-align:right">nodes expanded</th></tr></thead>
+      <tbody>
+        <tr><td>BFS</td><td>23</td><td class="num">80,439</td></tr>
+        <tr><td>UCS</td><td>23</td><td class="num">119,498</td></tr>
+        <tr class="best"><td>A*</td><td>23</td><td class="num">1,193</td></tr>
+        <tr class="best"><td>IDA*</td><td>23</td><td class="num">784</td></tr>
+      </tbody>
+    </table>
+    <p class="note">A* with the Manhattan heuristic expands <b>67×</b> fewer nodes than BFS for the identical optimal solution; IDA* fewer still. On a lighter 18-move scramble (optimal 12) the gap is 821 → 33, about 25×. Missionaries &amp; cannibals is tiny — all four agree on the 11-crossing plan, BFS expanding 13 nodes.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">Try it</p>
+    <h2>In-browser 8-puzzle solver</h2>
+    <p>The real solver is the Python package in this repo. This is a faithful JavaScript re-implementation of the same algorithms on the same puzzle, so you can watch the node counts diverge live. Scramble the board, pick an algorithm, and solve.</p>
+    <div class="demo">
+      <div class="board" id="board" aria-label="8-puzzle board"></div>
+      <div class="controls">
+        <button id="scramble">Scramble</button>
+        <select id="algo" aria-label="algorithm">
+          <option value="bfs">BFS</option>
+          <option value="astar" selected>A* (Manhattan)</option>
+          <option value="ida">IDA* (Manhattan)</option>
+        </select>
+        <button id="solve" class="primary">Solve</button>
+        <button id="play">Play solution</button>
+      </div>
+      <div class="out" id="out">Scramble the board, then solve.</div>
+    </div>
   </div>
 </section>
 
 <section>
   <div class="wrap">
     <p class="kicker">Reflection</p>
-    <h2>What rebuilding it taught me</h2>
+    <h2>What building it taught me</h2>
     <ul class="learn">
-      <li><b>Representation comes first.</b> How you model states and actions decides whether the search is easy or hopeless.</li>
-      <li><b>The algorithm is a trade-off.</b> BFS, DFS and A* each win on a different axis — completeness, memory or speed.</li>
-      <li><b>A good heuristic is everything.</b> A* is only as smart as its estimate; the right heuristic turns a huge search into a beeline.</li>
-      <li><b>Admissibility guarantees optimality.</b> A heuristic that never overestimates is what lets A* promise the best path.</li>
-      <li><b>Search is reasoning.</b> "Planning a route" and "playing a puzzle" are the same act — finding a path through a space of possibilities.</li>
+      <li><b>Representation comes first.</b> Encoding a state as an immutable tuple is what lets the search dedupe and reason at all.</li>
+      <li><b>The algorithm is a trade-off.</b> BFS, UCS, A* and IDA* each win on a different axis — completeness, generality, speed or memory.</li>
+      <li><b>A good heuristic is everything.</b> Manhattan distance turned an 80,000-node search into a 1,200-node one with no loss of optimality.</li>
+      <li><b>Admissibility is a property you test.</b> "Never overestimates" is what licenses optimality — so the suite checks it against the true cost-to-go.</li>
+      <li><b>Unsolvable means unsolvable.</b> Inversion parity decides 8-puzzle solvability; the search and the classifier are made to agree.</li>
     </ul>
   </div>
 </section>
@@ -134,10 +165,157 @@
   <div class="wrap">
     <div class="credit">
       <div class="k">About this build</div>
-      <p style="margin:0">An original, from-scratch build by <b>Andrea</b> — written to learn classical AI reasoning: state-space modelling, uninformed search (BFS/DFS), informed search with A*, admissible heuristics and cost analysis. Plain HTML/CSS, deployed on GitHub Pages.</p>
+      <p style="margin:0">A from-scratch build by <b>Andrea</b> — a single-agent state-space planner in pure Python: a clean problem interface, the 8-puzzle and missionaries-and-cannibals domains, BFS / uniform-cost / A* / IDA* search, admissible heuristics, and a 33-test suite. The browser demo above mirrors the real Python solver. Plain HTML/CSS/JS, deployed on GitHub Pages.</p>
     </div>
     <p class="fine">Built from scratch by Andrea · one of an ongoing series of learning builds.</p>
   </div>
 </footer>
+
+<script>
+// In-browser mirror of the Python 8-puzzle solver (BFS / A* / IDA* with Manhattan).
+// Same model as reasoning/domains/eight_puzzle.py; here only to make the gap visible.
+(function(){
+  var GOAL = [1,2,3,4,5,6,7,8,0];
+  var state = GOAL.slice();
+  var boardEl = document.getElementById('board');
+  var outEl = document.getElementById('out');
+
+  function render(s){
+    boardEl.innerHTML = '';
+    s.forEach(function(v){
+      var d = document.createElement('div');
+      d.className = 'cell' + (v===0?' blank':'');
+      d.textContent = v===0 ? '' : v;
+      boardEl.appendChild(d);
+    });
+  }
+  function key(s){ return s.join(','); }
+  function successors(s){
+    var out = [], b = s.indexOf(0), r = Math.floor(b/3), c = b%3;
+    var moves = [[-1,0],[1,0],[0,-1],[0,1]];
+    for(var i=0;i<moves.length;i++){
+      var nr=r+moves[i][0], nc=c+moves[i][1];
+      if(nr>=0&&nr<3&&nc>=0&&nc<3){
+        var ni=nr*3+nc, t=s.slice();
+        t[b]=t[ni]; t[ni]=0; out.push(t);
+      }
+    }
+    return out;
+  }
+  function manhattan(s){
+    var tot=0;
+    for(var i=0;i<9;i++){var v=s[i]; if(v===0) continue; var gi=v-1; tot+=Math.abs(Math.floor(i/3)-Math.floor(gi/3))+Math.abs(i%3-gi%3);}
+    return tot;
+  }
+  function isGoal(s){ for(var i=0;i<9;i++) if(s[i]!==GOAL[i]) return false; return true; }
+
+  function bfs(start){
+    if(isGoal(start)) return {path:[start],expanded:0};
+    var q=[start], seen={}, parent={}, expanded=0;
+    seen[key(start)]=true;
+    while(q.length){
+      var cur=q.shift(); expanded++;
+      var succ=successors(cur);
+      for(var i=0;i<succ.length;i++){
+        var k=key(succ[i]);
+        if(seen[k]) continue;
+        seen[k]=true; parent[k]=cur;
+        if(isGoal(succ[i])) return {path:rebuild(parent,succ[i],start),expanded:expanded};
+        q.push(succ[i]);
+      }
+    }
+    return null;
+  }
+  function rebuild(parent,end,start){
+    var path=[end], cur=end;
+    while(key(cur)!==key(start)){ cur=parent[key(cur)]; path.push(cur); }
+    path.reverse(); return path;
+  }
+  function astar(start){
+    // binary-heap-free PQ via sorted insert; fine for puzzle sizes here
+    var open=[{s:start,g:0,f:manhattan(start)}], best={}, parent={}, expanded=0;
+    best[key(start)]=0;
+    while(open.length){
+      var bi=0; for(var i=1;i<open.length;i++) if(open[i].f<open[bi].f) bi=i;
+      var node=open.splice(bi,1)[0];
+      if(node.g>best[key(node.s)]) continue;
+      if(isGoal(node.s)) return {path:rebuild(parent,node.s,start),expanded:expanded};
+      expanded++;
+      var succ=successors(node.s);
+      for(var j=0;j<succ.length;j++){
+        var g=node.g+1, k=key(succ[j]);
+        if(!(k in best)||g<best[k]){ best[k]=g; parent[k]=node.s; open.push({s:succ[j],g:g,f:g+manhattan(succ[j])}); }
+      }
+    }
+    return null;
+  }
+  function ida(start){
+    var expanded={n:0};
+    var bound=manhattan(start), path=[start], seen={};
+    seen[key(start)]=true;
+    function dfs(g,bound){
+      var node=path[path.length-1], f=g+manhattan(node);
+      if(f>bound) return f;
+      if(isGoal(node)) return 'found';
+      expanded.n++;
+      var min=Infinity, succ=successors(node);
+      for(var i=0;i<succ.length;i++){
+        var k=key(succ[i]); if(seen[k]) continue;
+        path.push(succ[i]); seen[k]=true;
+        var t=dfs(g+1,bound);
+        if(t==='found') return 'found';
+        if(t<min) min=t;
+        path.pop(); delete seen[k];
+      }
+      return min;
+    }
+    while(bound<=60){
+      var t=dfs(0,bound);
+      if(t==='found') return {path:path.slice(),expanded:expanded.n};
+      if(t===Infinity) return null;
+      bound=t;
+    }
+    return null;
+  }
+
+  function scramble(){
+    var s=GOAL.slice(), last=-1;
+    for(var i=0;i<40;i++){
+      var b=s.indexOf(0), succ=successors(s);
+      var pick=succ[Math.floor(Math.random()*succ.length)];
+      s=pick;
+    }
+    state=s; render(state);
+    outEl.textContent='Scrambled. Manhattan heuristic = '+manhattan(state)+'. Pick an algorithm and solve.';
+    lastSolution=null;
+  }
+
+  var lastSolution=null;
+  function solve(){
+    var algo=document.getElementById('algo').value;
+    var t0=performance.now();
+    var res = algo==='bfs'?bfs(state):algo==='astar'?astar(state):ida(state);
+    var ms=(performance.now()-t0).toFixed(1);
+    if(!res){ outEl.textContent='No solution found (unsolvable scramble).'; return; }
+    lastSolution=res.path;
+    var name=algo==='bfs'?'BFS':algo==='astar'?'A* (Manhattan)':'IDA* (Manhattan)';
+    outEl.innerHTML='<span class="hi">'+name+'</span>\noptimal length: <span class="g">'+(res.path.length-1)+'</span> moves\nnodes expanded: <span class="g">'+res.expanded.toLocaleString()+'</span>\ntime: '+ms+' ms\n\nTip: solve the same scramble with BFS vs A* to see the node-count gap.';
+  }
+  function play(){
+    if(!lastSolution){ outEl.textContent='Solve first, then play the solution.'; return; }
+    var i=0, path=lastSolution;
+    var timer=setInterval(function(){
+      if(i>=path.length){ clearInterval(timer); return; }
+      state=path[i].slice(); render(state); i++;
+    },220);
+  }
+
+  document.getElementById('scramble').onclick=scramble;
+  document.getElementById('solve').onclick=solve;
+  document.getElementById('play').onclick=play;
+  render(state);
+  scramble();
+})();
+</script>
 </body>
 </html>
